@@ -11,8 +11,6 @@
 
 #import "RCTBackedTextInputViewProtocol.h"
 
-#import "RCTBackedTextInputDelegate.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 /*

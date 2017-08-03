@@ -37,6 +37,7 @@ const PRESS_RETENTION_OFFSET = {top: 20, left: 20, right: 20, bottom: 30};
  * TouchableWithoutFeedback supports only one child.
  * If you wish to have several child components, wrap them in a View.
  */
+// $FlowFixMe(>=0.41.0)
 const TouchableWithoutFeedback = createReactClass({
   displayName: 'TouchableWithoutFeedback',
   mixins: [TimerMixin, Touchable.Mixin],

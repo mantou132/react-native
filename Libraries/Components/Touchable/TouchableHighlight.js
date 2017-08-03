@@ -23,11 +23,11 @@ const TouchableWithoutFeedback = require('TouchableWithoutFeedback');
 const View = require('View');
 const ViewPropTypes = require('ViewPropTypes');
 
-const createReactClass = require('create-react-class');
-const ensureComponentIsNative = require('ensureComponentIsNative');
-const ensurePositiveDelayProps = require('ensurePositiveDelayProps');
-const keyOf = require('fbjs/lib/keyOf');
-const merge = require('merge');
+var createReactClass = require('create-react-class');
+var ensureComponentIsNative = require('ensureComponentIsNative');
+var ensurePositiveDelayProps = require('ensurePositiveDelayProps');
+var keyOf = require('fbjs/lib/keyOf');
+var merge = require('merge');
 
 import type {Event} from 'TouchableWithoutFeedback';
 
