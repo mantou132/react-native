@@ -405,8 +405,12 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
         }
 
         Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        if (fileChooserParams.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+          contentSelectionIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
         contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
-        contentSelectionIntent.setType("image/*");
+        String[] acceptTypes = fileChooserParams.getAcceptTypes();
+        contentSelectionIntent.setType(acceptTypes[0].isEmpty() ? "*/*" : acceptTypes[0]);
 
         Intent[] intentArray;
         if(takePictureIntent != null) {
@@ -417,7 +421,6 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
 
         Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
         chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
-        chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
         chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
 
         reactContext.getCurrentActivity().startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
@@ -446,6 +449,15 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
             String dataString = data.getDataString();
             if (dataString != null) {
               results = new Uri[]{Uri.parse(dataString)};
+            } else {
+              if (data.getClipData() != null) {
+                results = new Uri[data.getClipData().getItemCount()];
+                for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                  results[i] = data.getClipData().getItemAt(i).getUri();
+                }
+              } else {
+                results = null;
+              }
             }
           }
         }
