@@ -34,6 +34,13 @@ import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.CookieManager;
 
+//Download Files imports
+import android.app.DownloadManager;
+import android.webkit.DownloadListener;
+import android.webkit.URLUtil;
+import android.widget.Toast;
+import static android.content.Context.DOWNLOAD_SERVICE;
+
 import com.facebook.common.logging.FLog;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.bridge.Arguments;
@@ -428,6 +435,46 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
         return true;
       }
     });
+    webView.setDownloadListener(new DownloadListener() {
+      public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
+        // http://www.jianshu.com/p/6e38e1ef203a
+        // 指定下载地址
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        // 允许媒体扫描，根据下载的文件类型被加入相册、音乐等媒体库
+        request.allowScanningByMediaScanner();
+        // 设置通知的显示类型，下载进行时和完成后显示通知
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        // 设置通知栏的标题，如果不设置，默认使用文件名
+        // request.setTitle("This is title");
+        // 设置通知栏的描述
+        // request.setDescription("This is description");
+        // 允许在计费流量下下载
+        request.setAllowedOverMetered(false);
+        // 允许该记录在下载管理界面可见
+        request.setVisibleInDownloadsUi(false);
+        // 允许漫游时下载
+        request.setAllowedOverRoaming(true);
+        // 允许下载的网路类型
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        // 设置下载文件保存的路径和文件名
+        String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
+        // log.debug("fileName:{}", fileName);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        // 另外可选一下方法，自定义下载路径
+        // request.setDestinationUri()
+        // request.setDestinationInExternalFilesDir()
+        final DownloadManager downloadManager = (DownloadManager) reactContext.getSystemService(DOWNLOAD_SERVICE);
+        // 添加一个下载任务
+        long downloadId = downloadManager.enqueue(request);
+        // log.debug("downloadId:{}", downloadId);
+        // https://github.com/apache/cordova-plugin-inappbrowser/pull/201/files#diff-6b96481eda04f0b853d9e7b6637d167b
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT); //This is important!
+        intent.addCategory(Intent.CATEGORY_OPENABLE); //CATEGORY.OPENABLE
+        intent.setType("*/*");//any application,any extension
+        Toast.makeText(reactContext, "Downloading File '" + fileName + "'", Toast.LENGTH_LONG).show();
+      }
+    });
+
     reactContext.addLifecycleEventListener(webView);
 
     reactContext.addActivityEventListener(new ActivityEventListener() {
