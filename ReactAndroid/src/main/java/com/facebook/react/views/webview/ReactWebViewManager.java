@@ -126,6 +126,7 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
   private @Nullable WebView.PictureListener mPictureListener;
 
   private ValueCallback<Uri[]> mFilePathCallback;
+  private ValueCallback<Uri> mUploadMessage;
   private String mCameraPhotoPath;
 
   protected static class ReactWebViewClient extends WebViewClient {
@@ -434,6 +435,23 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
 
         return true;
       }
+      // openFileChooser for Android 3.0+
+      public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
+        mUploadMessage = uploadMsg;
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(acceptType);
+        Intent chooserIntent = Intent.createChooser(intent, "File Browser");
+        reactContext.getCurrentActivity().startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
+      }
+      // openFileChooser for Android < 3.0
+      public void openFileChooser(ValueCallback<Uri> uploadMsg){
+        openFileChooser(uploadMsg, "*/*");
+      }
+      //openFileChooser for other Android versions
+      public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+        openFileChooser(uploadMsg, acceptType);
+      }
     });
     webView.setDownloadListener(new DownloadListener() {
       public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
@@ -516,6 +534,20 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
           mFilePathCallback.onReceiveValue(results);
         }
         mFilePathCallback = null;
+        return;
+      }
+      protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if(requestCode != INPUT_FILE_REQUEST_CODE || mUploadMessage == null) {
+          return;
+        }
+        Uri result = null;
+        if (resultCode == Activity.RESULT_OK) {
+          if(intent != null) {
+            result = intent.getData(); 
+          }
+        }
+        mUploadMessage.onReceiveValue(result);
+        mUploadMessage = null;
         return;
       }
 
