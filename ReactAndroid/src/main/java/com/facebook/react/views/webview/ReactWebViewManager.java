@@ -114,6 +114,8 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
   public static final int COMMAND_STOP_LOADING = 4;
   public static final int COMMAND_POST_MESSAGE = 5;
   public static final int COMMAND_INJECT_JAVASCRIPT = 6;
+  public static final int COMMAND_FLUSH_COOKIE = 7;
+  public static final int COMMAND_REMOVE_SESSION_COOKIES = 8;
 
   // Use `webView.loadUrl("about:blank")` to reliably reset the view
   // state and release page resources (including any running JavaScript).
@@ -128,6 +130,23 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
   private ValueCallback<Uri[]> mFilePathCallback;
   private ValueCallback<Uri> mUploadMessage;
   private String mCameraPhotoPath;
+
+  public static void flushCookie() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      CookieManager.getInstance().flush();
+    }
+  }
+
+  public static void removeSessionCookies() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      CookieManager.getInstance().removeSessionCookies(new ValueCallback<Boolean>() {
+          @Override
+          public void onReceiveValue(Boolean value) {
+              // 清除结果
+          }
+      });
+    }
+  }
 
   protected static class ReactWebViewClient extends WebViewClient {
 
@@ -723,7 +742,9 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
         "reload", COMMAND_RELOAD,
         "stopLoading", COMMAND_STOP_LOADING,
         "postMessage", COMMAND_POST_MESSAGE,
-        "injectJavaScript", COMMAND_INJECT_JAVASCRIPT
+        "injectJavaScript", COMMAND_INJECT_JAVASCRIPT,
+        "flushCookie", COMMAND_FLUSH_COOKIE,
+        "removeSessionCookies", COMMAND_REMOVE_SESSION_COOKIES
       );
   }
 
@@ -763,6 +784,12 @@ public class ReactWebViewManager extends SimpleViewManager<WebView> {
         break;
       case COMMAND_INJECT_JAVASCRIPT:
         root.loadUrl("javascript:" + args.getString(0));
+        break;
+      case COMMAND_FLUSH_COOKIE:
+        ReactWebViewManager.flushCookie();
+        break;
+      case COMMAND_REMOVE_SESSION_COOKIES:
+        ReactWebViewManager.removeSessionCookies();
         break;
     }
   }

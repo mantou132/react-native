@@ -340,6 +340,22 @@ class WebView extends React.Component {
     );
   };
 
+  flushCookie = () => {
+    UIManager.dispatchViewManagerCommand(
+      this.getWebViewHandle(),
+      UIManager.RCTWebView.Commands.flushCookie,
+      null
+    );
+  };
+
+  removeSessionCookies = () => {
+    UIManager.dispatchViewManagerCommand(
+      this.getWebViewHandle(),
+      UIManager.RCTWebView.Commands.removeSessionCookies,
+      null
+    );
+  };
+
   /**
    * We return an event with a bunch of fields including:
    *  url, title, loading, canGoBack, canGoForward
